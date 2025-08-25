@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model productos {
+  id_producto        Int                  @id @default(autoincrement())
+  nombre             String               @db.VarChar(100)
+  precio_venta       Float                @db.Float
+  precio_compra      Float                @db.Float
+  categoria_id       Int
+  favorito           Int
+  codigos            Json
+  categorias         categorias           @relation(fields: [categoria_id], references: [id_categoria], onUpdate: Restrict, map: "productos_ibfk_1")
+  productos_vendidos productos_vendidos[]
+
+  @@index([categoria_id], map: "categoria_id")
+}
+
+model productos_vendidos {
+  id_producto_vendido Int       @id @default(autoincrement())
+  venta_id            Int
+  producto_id         Int
+  cantidad            Int
+  productos           productos @relation(fields: [producto_id], references: [id_producto], onUpdate: Restrict, map: "productos_vendidos_ibfk_1")
+  ventas              ventas    @relation(fields: [venta_id], references: [id_venta], onUpdate: Restrict, map: "productos_vendidos_ibfk_2")
+
+  @@index([producto_id], map: "producto_id")
+  @@index([venta_id, producto_id], map: "venta_id")
+}
+
+model ventas {
+  id_venta           Int                  @id @default(autoincrement())
+  fecha_venta        String               @db.VarChar(100)
+  productos_vendidos productos_vendidos[]
+}
+
+model categorias {
+  id_categoria Int         @id @default(autoincrement())
+  nombre       String      @db.VarChar(100)
+  productos    productos[]
+}
